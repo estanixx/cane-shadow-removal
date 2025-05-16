@@ -19,6 +19,6 @@ def pipeline2(img):
     return img
 
 display_results(
-    pipeline2,
+    pipeline1,
     dict(list(get_jd_images().items())[:4]),
 )

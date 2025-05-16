@@ -76,3 +76,50 @@ def display_results(processing_function, images_dict_bgr, **kwargs):
 
     plt.tight_layout()
     plt.show()
+
+def display_results_two_methods(method1, method2, images_dict_bgr, **kwargs):
+    """
+    Muestra imágenes originales y procesadas por dos métodos, lado a lado.
+
+    Args:
+        method1: Primer método de procesamiento.
+        method2: Segundo método de procesamiento.
+        images_dict_bgr: Diccionario {filename: bgr_image}.
+        **kwargs: Argumentos adicionales para los métodos.
+    """
+    num_images = len(images_dict_bgr)
+    plt.figure(figsize=(18, num_images * 5))
+    plot_index = 1
+
+    for filename, img_bgr in images_dict_bgr.items():
+        if img_bgr is None:
+            print(f"Skipping {filename}: Image data is None.")
+            continue
+
+        # Procesar con ambos métodos
+        processed1 = method1(img_bgr, **kwargs)
+        processed2 = method2(img_bgr, **kwargs)
+
+        # Mostrar original
+        plt.subplot(num_images, 3, plot_index)
+        plt.imshow(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB))
+        plt.title(f'Original: {filename}')
+        plt.axis('off')
+        plot_index += 1
+
+        # Mostrar método 1
+        plt.subplot(num_images, 3, plot_index)
+        plt.imshow(cv2.cvtColor(processed1, cv2.COLOR_BGR2RGB))
+        plt.title(f'{method1.__name__}')
+        plt.axis('off')
+        plot_index += 1
+
+        # Mostrar método 2
+        plt.subplot(num_images, 3, plot_index)
+        plt.imshow(cv2.cvtColor(processed2, cv2.COLOR_BGR2RGB))
+        plt.title(f'{method2.__name__}')
+        plt.axis('off')
+        plot_index += 1
+
+    plt.tight_layout()
+    plt.show()
