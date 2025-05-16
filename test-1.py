@@ -32,15 +32,14 @@ def increase_brightness_otsu(img_bgr, factor):
 
 def pipeline1(img):
     img = increase_brightness_otsu(img, 1.5)
-    img = remove_shadows_medianblur_lab_color(img, blur_ksize=61)
-    # img = decrease_brightness_otsu(img, 0.9)
+    img = remove_shadows_medianblur_lab_color(img, blur_ksize=51)
+    #img = decrease_brightness_otsu(img, 0.9)
     
     img = cv2.medianBlur(img, 5, 0)
 
     return img
 
 display_results(
-    # pipeline1,
-    remove_shadows_morph_gray,
+    pipeline1,
     dict(list(images.items())[7:]),
 )
