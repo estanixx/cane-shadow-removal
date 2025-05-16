@@ -2,25 +2,34 @@ import os
 import matplotlib.pyplot as plt
 import cv2
 # --- Configuration ---
-res_dir = 'res'
-image_files = []
-if os.path.isdir(res_dir): # Verificar si el directorio existe
-    # os.listdir() obtiene todos los archivos y carpetas dentro de res_dir
-    # Filtramos para quedarnos solo con archivos (no subdirectorios)
-    # y opcionalmente, solo con extensiones de imagen comunes
-    allowed_extensions = ('.png', '.jpg', '.jpeg', '.bmp', '.tiff', '.gif')
-    for filename in os.listdir(res_dir):
-        file_path = os.path.join(res_dir, filename)
-        if os.path.isfile(file_path) and filename.lower().endswith(allowed_extensions):
-            image_files.append(filename) # Añadir solo el nombre del archivo a la lista
-    print(f"Archivos encontrados en '{res_dir}': {len(image_files)}")
-    # print(image_files) # Descomenta si quieres ver la lista completa de archivos
-else:
-    print(f"Error: El directorio '{res_dir}' no fue encontrado.")
-    image_files = [] # Dejar la lista vacía si el directorio no existe
+def get_images(dir):
+    res_dir = f'res/{dir}'
+    image_files = []
+    if os.path.isdir(res_dir): # Verificar si el directorio existe
+        # os.listdir() obtiene todos los archivos y carpetas dentro de res_dir
+        # Filtramos para quedarnos solo con archivos (no subdirectorios)
+        # y opcionalmente, solo con extensiones de imagen comunes
+        allowed_extensions = ('.png', '.jpg', '.jpeg', '.bmp', '.tiff', '.gif')
+        for filename in os.listdir(res_dir):
+            file_path = os.path.join(res_dir, filename)
+            if os.path.isfile(file_path) and filename.lower().endswith(allowed_extensions):
+                image_files.append(filename) # Añadir solo el nombre del archivo a la lista
+        print(f"Archivos encontrados en '{res_dir}': {len(image_files)}")
+        # print(image_files) # Descomenta si quieres ver la lista completa de archivos
+    else:
+        print(f"Error: El directorio '{res_dir}' no fue encontrado.")
+        image_files = [] # Dejar la lista vacía si el directorio no existe
+    images = {img: cv2.imread(f'{res_dir}/{img}')for img in image_files} 
+    return images
 
+def get_jd_images():
+    return get_images('jhondeer')
 
-images = {img: cv2.imread(f'res/{img}')for img in image_files}
+def get_moving_case_images():
+    return get_images('case_1')
+
+def get_static_case_images():
+    return get_images('case_2')
 
 # --- Display function ---
 def display_results(processing_function, images_dict_bgr, **kwargs):

@@ -178,3 +178,81 @@ def load_image(image_path):
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     return img_rgb
 
+
+def increase_brightness_otsu(img_bgr, factor):
+    img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+
+    # Usar el canal V (Value) para la máscara y modificación, según tu código.
+    # El índice 2 corresponde al canal V en HSV.
+    v_channel_for_mask = img_hsv[:, :, 2]
+
+    _, binary_mask_single_channel = cv2.threshold(
+        v_channel_for_mask, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU
+    )
+    binary_mask_single_channel = cv2.GaussianBlur(binary_mask_single_channel, (15, 15), 0)
+    condition_met = (binary_mask_single_channel == 255)
+
+    # Modificar el canal V: multiplicar por 2 donde la condición se cumple.
+    # Convertir a np.int16 para evitar desbordamiento (overflow) durante la multiplicación.
+    v_channel = img_hsv[:, :, 2]
+    brighten_image = v_channel * factor
+    v_channel_modified = np.where(condition_met, brighten_image, v_channel).astype('uint8')
+    # Asegurar que los valores estén en el rango [0, 255] después de la multiplicación y antes de reconvertir a uint8.
+    v_channel_modified =  np.clip(v_channel_modified, 0, 255).astype(np.uint8)
+    # v_channel_modified = cv2.equalizeHist(v_channel_modified)
+    img_hsv[:, :, 2] = v_channel_modified
+    # Reduce saturation
+    img_hsv[:, :, 1] = (img_hsv[:, :, 1]).astype(np.uint8)
+    # img_hsv[:, :, 1] = cv2.equalizeHist(img_hsv[:, :, 1])
+    output_bgr = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR)
+    return output_bgr
+
+
+
+
+
+def decrease_brightness_otsu_hsv(img_bgr, factor): # Note: Name from previous context.
+    """
+    Adjusts the brightness of the parts of an image where the V-channel
+    (from HSV color space) has a value of 230 or greater.
+    This version uses a fixed threshold, NOT Otsu's method,
+    despite the function name from previous iterations.
+
+    Args:
+        img_bgr (numpy.ndarray): The input BGR image.
+        factor (float): The factor by which to multiply the brightness
+                        of the selected high-brightness regions in the BGR image.
+                        (e.g., 0.5 to decrease, 1.5 to increase).
+
+    Returns:
+        numpy.ndarray: The BGR image with adjusted brightness.
+    """
+    if not isinstance(img_bgr, np.ndarray):
+        raise TypeError("Input image must be a NumPy ndarray.")
+
+    # Convert BGR to HSV to access the V (Value/Brightness) channel
+    hsv_img = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+    
+    # Extract the V (Value) channel
+    v_channel = hsv_img[:, :, 2]
+
+    # Create a mask for pixels where V-channel value is 230 or greater.
+    # This directly creates a boolean mask.
+    high_brightness_mask = (v_channel >= 220) * 255
+    high_brightness_mask = high_brightness_mask.astype(np.uint8)
+    # Work on a float copy of the original BGR image for modifications
+    # to preserve precision during multiplication and avoid uint8 overflow.
+    output_img_float = img_bgr.astype(np.float32)
+
+    # Apply the brightness adjustment factor to the BGR pixels
+    # corresponding to the high_brightness_mask.
+    output_img_float[high_brightness_mask == 255] *= factor
+
+    # Clip pixel values to the valid range [0, 255]
+    output_img_clipped = np.clip(output_img_float, 0, 255)
+
+    # Convert the image back to uint8 data type
+    output_img_final = output_img_clipped.astype(np.uint8)
+
+    return output_img_final
+
